@@ -93,8 +93,8 @@ print activeexe
 for x in frange(0, 1, 0.05):
 	print 1 - x
 	#print str(float(x / 10))
-	subprocess.call("nircmd setappvolume itunes.exe " + str(1 - x))
-	subprocess.call("nircmd setappvolume " + "skype.exe" + " " + str(x))
+	subprocess.call("nircmd setappvolume skype.exe " + str(1 - x))
+	subprocess.call("nircmd setappvolume " + "itunes.exe" + " " + str(x))
 
 # Terminates the volume mixer if it was opened by WinVol, so the user doesn't try to open an invisible window
 #if vol_close:

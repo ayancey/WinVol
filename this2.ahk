@@ -1,0 +1,1 @@
+#b::Run main2.pyw

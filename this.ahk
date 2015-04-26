@@ -1,1 +1,1 @@
-#n::Run main.py
+#n::Run main.pyw
