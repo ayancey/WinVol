@@ -1,23 +1,15 @@
-import os
-import psutil
-import fuckit
-import win32process
-import win32process as process
-import win32gui
-import sys
-import win32con
-import ctypes
+import time
 import subprocess
-
-# http://stackoverflow.com/a/7006424
-# Opens the volume mixer silently
-si = subprocess.STARTUPINFO()
-si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-subprocess.Popen('sndvol', startupinfo=si)
+import psutil
+import win32process
+import win32gui
+import win32con
+import fuckit
 
 vol_pid = 0
 vol_hwnd = 0
 vol_ready = False
+vol_close = False
 
 # Find process ID of volume mixer
 for pid in psutil.pids():
@@ -26,6 +18,17 @@ for pid in psutil.pids():
 		if psutil.Process(pid).name() == 'SndVol.exe':
 			vol_pid = pid
 			print 'Found volume mixer @ ' + str(vol_pid)
+
+# http://stackoverflow.com/a/7006424
+# Opens the volume mixer silently
+if vol_pid == 0:
+	vol_close = True
+	si = subprocess.STARTUPINFO()
+	si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+	vol = subprocess.Popen('sndvol', startupinfo=si)
+	# For some reason this fixes when the module can't spit out a PID fast enough
+	time.sleep(0.1)
+	vol_pid = vol.pid
 
 # http://stackoverflow.com/a/4427960
 def GetText(hwnd):
@@ -60,5 +63,6 @@ while vol_ready == False:
 
 win32gui.EnumChildWindows(vol_hwnd, childHandler, None)
 
-# Terminates the volume mixer so the user doesn't try to open an invisible window
-subprocess.call('taskkill /F /IM sndvol.exe', creationflags=0x08000000)
+# Terminates the volume mixer if it was opened by WinVol, so the user doesn't try to open an invisible window
+if vol_close:
+	subprocess.call('taskkill /F /IM sndvol.exe', creationflags=0x08000000)
