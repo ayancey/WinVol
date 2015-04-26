@@ -8,70 +8,103 @@ import sys
 import win32con
 import ctypes
 
+vol_pid = 0
+
+# Find process ID of Volume Mixer
 for pid in psutil.pids():
 	with fuckit:
-		#break
-		print psutil.Process(pid).name() + ' ' + str(pid)
+		if psutil.Process(pid).name() == 'SndVol.exe':
+			vol_pid = pid
+			print 'Found Volume Mixer @ ' + str(vol_pid)
 
 
-def windowEnumerationHandler(hwnd, resultList):
-    resultList.append((hwnd, win32gui.GetWindowText(hwnd), getClassName(hwnd)))
 
-def getClassName(hwnd):
-	resultString = ctypes.c_string("\000" * 32)
-	ctypes.windll.user32.GetClassNameA(hwnd, resultString, len(resultString))
-	return resultString.value
+def GetText(hwnd):
+    buf_size = 1 + win32gui.SendMessage(hwnd, win32con.WM_GETTEXTLENGTH, 0, 0)
+    buffer = win32gui.PyMakeBuffer(buf_size)
+    win32gui.SendMessage(hwnd, win32con.WM_GETTEXT, buf_size, buffer)
+    return buffer[:buf_size]
 
-def findTopWindow(wantedText=None, wantedClass=None):
-    topWindows = []
-    win32gui.EnumWindows(windowEnumerationHandler, topWindows)
-    for hwnd, windowText, windowClass in topWindows:
-        if wantedText and not windowText.startswith(wantedText):
-            continue
-        if wantedClass and not windowClass == wantedClass:
-            continue
-        return hwnd
+# while True:
+# 	print GetText(2165752)
 
-def findControl(topHwnd, selectionFunction):
+vol_hwnd = 0
 
-    def searchChildWindows(currentHwnd):
+def enumHandler(hwnd, lParam):
+	global vol_hwnd
+	if win32gui.IsWindowVisible(hwnd):
+	 if vol_pid in win32process.GetWindowThreadProcessId(hwnd):
+		vol_hwnd = hwnd
+		print 'Found Volume Mixer window @ ' + str(vol_hwnd)
+		print GetText(vol_hwnd)
 
-        childWindows = []
+def childHandler(hwnd, param):
+	print GetText(hwnd)
+	#print hwnd
 
-        try:
+win32gui.EnumWindows(enumHandler, None)
+win32gui.EnumChildWindows(vol_hwnd, childHandler, None)
 
-            win32gui.EnumChildWindows(currentHwnd, windowEnumerationHandler, childWindows)
+#print win32gui.GetClassName(1904276)
 
-        except win32gui.error, exception:
+# def windowEnumerationHandler(hwnd, resultList):
+#     resultList.append((hwnd, win32gui.GetWindowText(hwnd), getClassName(hwnd)))
 
-            # This seems to mean that the control does *cannot* have child windows
+# def getClassName(hwnd):
+# 	resultString = ctypes.c_string("\000" * 32)
+# 	ctypes.windll.user32.GetClassNameA(hwnd, resultString, len(resultString))
+# 	return resultString.value
 
-            return
+# def findTopWindow(wantedText=None, wantedClass=None):
+#     topWindows = []
+#     win32gui.EnumWindows(windowEnumerationHandler, topWindows)
+#     for hwnd, windowText, windowClass in topWindows:
+#         if wantedText and not windowText.startswith(wantedText):
+#             continue
+#         if wantedClass and not windowClass == wantedClass:
+#             continue
+#         return hwnd
 
-        for childHwnd, windowText, windowClass in childWindows:
+# def findControl(topHwnd, selectionFunction):
 
-            # print "Found ", childHwnd, windowText, windowClass
+#     def searchChildWindows(currentHwnd):
 
-            if selectionFunction(childHwnd, windowText, windowClass):
+#         childWindows = []
 
-                return childHwnd
+#         try:
 
-            else:
+#             win32gui.EnumChildWindows(currentHwnd, windowEnumerationHandler, childWindows)
 
-                descendentMatchingHwnd = searchChildWindows(childHwnd)
+#         except win32gui.error, exception:
 
-                if descendentMatchingHwnd:
+#             # This seems to mean that the control does *cannot* have child windows
 
-                    return descendentMatchingHwnd
+#             return
 
-        return
+#         for childHwnd, windowText, windowClass in childWindows:
 
-    return searchChildWindows(topHwnd)
+#             # print "Found ", childHwnd, windowText, windowClass
+
+#             if selectionFunction(childHwnd, windowText, windowClass):
+
+#                 return childHwnd
+
+#             else:
+
+#                 descendentMatchingHwnd = searchChildWindows(childHwnd)
+
+#                 if descendentMatchingHwnd:
+
+#                     return descendentMatchingHwnd
+
+#         return
+
+#     return searchChildWindows(topHwnd)
 
     
 
-topWindows = []
-win32gui.EnumWindows(windowEnumerationHandler, topWindows)
+# topWindows = []
+# win32gui.EnumWindows(windowEnumerationHandler, topWindows)
 
 
 # def enumHandler(hwnd, lParam):
