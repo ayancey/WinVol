@@ -33,6 +33,7 @@ if vol_pid == 0:
 	# For some reason this fixes when the module can't spit out a PID fast enough
 	time.sleep(0.1)
 	vol_pid = vol.pid
+	print 'Opening volume mixer silently @ ' + str(vol_pid)
 
 # http://stackoverflow.com/a/4427960
 def GetText(hwnd):
@@ -78,24 +79,10 @@ for appcap in application_captions:
 		if mixcap in appcap[0]:
 			playing_sound.append([appcap[0],psutil.Process(appcap[1]).name()])
 
+# Terminates the volume mixer if it was opened by WinVol, so the user doesn't try to open an invisible window
+if vol_close:
+	subprocess.call('taskkill /F /IM sndvol.exe', creationflags=0x08000000)
+
 for stuff in playing_sound:
 	print stuff[1]
 
-# http://stackoverflow.com/a/7267280
-def frange(x, y, jump):
-  while x < y:
-    yield x
-    x += jump
-
-print '----------'
-activeexe = psutil.Process(win32process.GetWindowThreadProcessId(win32gui.GetForegroundWindow())[1]).name()
-print activeexe
-for x in frange(0, 1, 0.05):
-	print 1 - x
-	#print str(float(x / 10))
-	subprocess.call("nircmd setappvolume itunes.exe " + str(1 - x))
-	subprocess.call("nircmd setappvolume " + "skype.exe" + " " + str(x))
-
-# Terminates the volume mixer if it was opened by WinVol, so the user doesn't try to open an invisible window
-#if vol_close:
-	#subprocess.call('taskkill /F /IM sndvol.exe', creationflags=0x08000000)
