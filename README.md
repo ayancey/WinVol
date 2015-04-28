@@ -11,6 +11,7 @@ WinFadr is the reason I made this module. It allows you to crossfade all running
 * [psutil](https://github.com/giampaolo/psutil)
 * [pywin32](http://sourceforge.net/projects/pywin32)
 * [fuckit](https://github.com/ajalt/fuckitpy)
+* Windows Vista or higher I think
 
 # Example
 ```python
