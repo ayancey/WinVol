@@ -25,6 +25,7 @@ class WinVol:
 			if win32gui.GetClassName(hwnd) == '#32770':
 				self.vol_hwnd = hwnd
 				if self.verbose:
+					print('Found volume mixer window @ ' + str(self.vol_hwnd))
 
 	def childHandler_Wait(self, hwnd, param):
 		if win32gui.GetWindowText(hwnd).replace('\x00','') == 'System Sounds':
@@ -47,6 +48,7 @@ class WinVol:
 				if psutil.Process(pid).name() == 'SndVol.exe':
 					self.vol_pid = pid
 					if verbose:
+						print('Found volume mixer @ ' + str(self.vol_pid))
 
 		# http://stackoverflow.com/a/7006424
 		# Opens the volume mixer silently
@@ -59,6 +61,7 @@ class WinVol:
 			time.sleep(0.1)
 			self.vol_pid = vol.pid
 			if verbose:
+				print('Opening volume mixer silently @ ' + str(self.vol_pid))
 
 		# Looks through all windows searching for volume mixer window
 		win32gui.EnumWindows(self.enumHandler, None)
@@ -80,5 +83,6 @@ class WinVol:
 		if self.vol_close:
 			subprocess.call('taskkill /F /IM sndvol.exe', creationflags=0x08000000)
 			if verbose:
+				print('Volume mixer closed')
 
 		return self.playing_sound
